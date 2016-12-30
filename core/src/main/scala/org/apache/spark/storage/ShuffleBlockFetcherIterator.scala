@@ -194,6 +194,10 @@ final class ShuffleBlockFetcherIterator(
   }
 
   private[this] def splitLocalRemoteBlocks(): ArrayBuffer[FetchRequest] = {
+    logInfo(s"ThreadName: ${Thread.currentThread().getName}, " +
+      s"ThreadID: ${Thread.currentThread().getId}, " +
+      s"numBlocksProcessed: ${numBlocksProcessed}, " +
+      s"numBlocksToFetch: ${numBlocksToFetch}")
     // Make remote requests at most maxBytesInFlight / 5 in length; the reason to keep them
     // smaller than maxBytesInFlight is to allow multiple, parallel fetches from up to 5
     // nodes, rather than blocking on reading output from one node.
@@ -304,6 +308,10 @@ final class ShuffleBlockFetcherIterator(
    * Throws a FetchFailedException if the next block could not be fetched.
    */
   override def next(): (BlockId, InputStream) = {
+    logInfo(s"ThreadName: ${Thread.currentThread().getName}, " +
+      s"ThreadID: ${Thread.currentThread().getId}, " +
+      s"numBlocksProcessed: ${numBlocksProcessed}, " +
+      s"numBlocksToFetch: ${numBlocksToFetch}")
     numBlocksProcessed += 1
     val startFetchWait = System.currentTimeMillis()
     currentResult = results.take()
