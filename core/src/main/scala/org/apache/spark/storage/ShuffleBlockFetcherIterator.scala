@@ -194,7 +194,7 @@ final class ShuffleBlockFetcherIterator(
   }
 
   private[this] def splitLocalRemoteBlocks(): ArrayBuffer[FetchRequest] = {
-    logInfo(s"ThreadName: ${Thread.currentThread().getName}, " +
+    logInfo(s"splitLocalRemoteBlocks, ThreadName: ${Thread.currentThread().getName}, " +
       s"ThreadID: ${Thread.currentThread().getId}, " +
       s"numBlocksProcessed: ${numBlocksProcessed}, " +
       s"numBlocksToFetch: ${numBlocksToFetch}")
@@ -308,7 +308,7 @@ final class ShuffleBlockFetcherIterator(
    * Throws a FetchFailedException if the next block could not be fetched.
    */
   override def next(): (BlockId, InputStream) = {
-    logInfo(s"ThreadName: ${Thread.currentThread().getName}, " +
+    logInfo(s"next, ThreadName: ${Thread.currentThread().getName}, " +
       s"ThreadID: ${Thread.currentThread().getId}, " +
       s"numBlocksProcessed: ${numBlocksProcessed}, " +
       s"numBlocksToFetch: ${numBlocksToFetch}")
