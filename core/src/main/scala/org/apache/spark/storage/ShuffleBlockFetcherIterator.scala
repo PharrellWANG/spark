@@ -212,6 +212,7 @@ final class ShuffleBlockFetcherIterator(
         // Filter out zero-sized blocks
         localBlocks ++= blockInfos.filter(_._2 != 0).map(_._1)
         numBlocksToFetch += localBlocks.size
+        logInfo(s"localBlocks.size is: ${localBlocks.size}")
       } else {
         val iterator = blockInfos.iterator
         var curRequestSize = 0L
