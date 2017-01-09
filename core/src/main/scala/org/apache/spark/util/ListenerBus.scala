@@ -59,8 +59,11 @@ private[spark] trait ListenerBus[L <: AnyRef, E] extends Logging {
     val iter = listeners.iterator
     while (iter.hasNext) {
       val listener = iter.next()
+      val begin = System.currentTimeMillis()
       try {
         doPostEvent(listener, event)
+        logInfo(s"cost: ${System.currentTimeMillis() - begin}, listener: ${listener.toString}, " +
+          s"event: ${event.toString}")
       } catch {
         case NonFatal(e) =>
           logError(s"Listener ${Utils.getFormattedClassName(listener)} threw an exception", e)
