@@ -412,7 +412,7 @@ class JobProgressListener(conf: SparkConf) extends SparkListener with Logging {
         logInfo(s"BstageData.taskData.size: ${stageData.taskData.size}, " +
           s"retainedTasks: ${retainedTasks}")
         stageData.taskData = stageData.taskData.drop(
-          stageData.taskData.size - (retainedTasks - (retainedTasks * 0.01).toInt))
+          stageData.taskData.size - retainedTasks + (retainedTasks * 0.01).toInt)
         logInfo(s"AstageData.taskData.size: ${stageData.taskData.size}, " +
           s"retainedTasks: ${retainedTasks}")
       }
