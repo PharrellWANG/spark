@@ -408,9 +408,9 @@ class JobProgressListener(conf: SparkConf) extends SparkListener with Logging {
       taskData.errorMessage = errorMessage
 
       // If Tasks is too large, remove and garbage collect old tasks
-      if (stageData.taskData.size > retainedTasks) {
-        stageData.taskData = stageData.taskData.drop(stageData.taskData.size - retainedTasks)
-      }
+//      if (stageData.taskData.size > retainedTasks) {
+//        stageData.taskData = stageData.taskData.drop(stageData.taskData.size - retainedTasks)
+//      }
 
       for (
         activeJobsDependentOnStage <- stageIdToActiveJobIds.get(taskEnd.stageId);
