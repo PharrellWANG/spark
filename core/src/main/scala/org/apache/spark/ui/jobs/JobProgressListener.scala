@@ -141,22 +141,22 @@ class JobProgressListener(conf: SparkConf) extends SparkListener with Logging {
 
   /** If stages is too large, remove and garbage collect old stages */
   private def trimStagesIfNecessary(stages: ListBuffer[StageInfo]) = synchronized {
-    val start = System.currentTimeMillis()
     if (stages.size > retainedStages) {
+      val start = System.currentTimeMillis()
       val toRemove = (stages.size - retainedStages)
       stages.take(toRemove).foreach { s =>
         stageIdToData.remove((s.stageId, s.attemptId))
         stageIdToInfo.remove(s.stageId)
       }
       stages.trimStart(toRemove)
+      logInfo(s"Trim stages time consuming: ${System.currentTimeMillis() - start}")
     }
-    logInfo(s"Trim stages time consuming: ${System.currentTimeMillis() - start}")
   }
 
   /** If jobs is too large, remove and garbage collect old jobs */
   private def trimJobsIfNecessary(jobs: ListBuffer[JobUIData]) = synchronized {
-    val start = System.currentTimeMillis()
     if (jobs.size > retainedJobs) {
+      val start = System.currentTimeMillis()
       val toRemove = (jobs.size - retainedJobs)
       jobs.take(toRemove).foreach { job =>
         // Remove the job's UI data, if it exists
@@ -174,8 +174,8 @@ class JobProgressListener(conf: SparkConf) extends SparkListener with Logging {
         }
       }
       jobs.trimStart(toRemove)
+      logInfo(s"Trim jobs time consuming: ${System.currentTimeMillis() - start}")
     }
-    logInfo(s"Trim jobs time consuming: ${System.currentTimeMillis() - start}")
   }
 
   override def onJobStart(jobStart: SparkListenerJobStart): Unit = synchronized {
