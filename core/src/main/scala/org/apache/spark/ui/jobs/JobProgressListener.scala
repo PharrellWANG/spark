@@ -144,7 +144,7 @@ class JobProgressListener(conf: SparkConf) extends SparkListener with Logging {
     logInfo(s"stages.size: ${stages.size}")
     if (stages.size > retainedStages) {
       val start = System.currentTimeMillis()
-      val toRemove = (stages.size - retainedStages)
+      val toRemove = removedItems(stages.size, retainedStages)
       stages.take(toRemove).foreach { s =>
         stageIdToData.remove((s.stageId, s.attemptId))
         stageIdToInfo.remove(s.stageId)
@@ -159,7 +159,7 @@ class JobProgressListener(conf: SparkConf) extends SparkListener with Logging {
     logInfo(s"jobs.size: ${jobs.size}")
     if (jobs.size > retainedJobs) {
       val start = System.currentTimeMillis()
-      val toRemove = (jobs.size - retainedJobs)
+      val toRemove = removedItems(jobs.size, retainedJobs)
       jobs.take(toRemove).foreach { job =>
         // Remove the job's UI data, if it exists
         jobIdToData.remove(job.jobId).foreach { removedJob =>
@@ -417,7 +417,8 @@ class JobProgressListener(conf: SparkConf) extends SparkListener with Logging {
       if (stageData.taskData.size > retainedTasks) {
         logInfo(s"stageData.taskData.size: ${stageData.taskData.size}")
         val start = System.currentTimeMillis()
-        stageData.taskData = stageData.taskData.drop(stageData.taskData.size - retainedTasks)
+        stageData.taskData = stageData.taskData.drop(
+          removedItems(stageData.taskData.size, retainedTasks))
         logInfo(s"Trim tasks time consuming: ${System.currentTimeMillis() - start}")
       }
 
@@ -437,6 +438,11 @@ class JobProgressListener(conf: SparkConf) extends SparkListener with Logging {
         }
       }
     }
+  }
+  
+  def removedItems(dataSize: Int, retainedSize: Int): Int = {
+    val toRemove = dataSize - retainedSize + retainedSize * 0.1
+    toRemove.toInt
   }
 
   /**
