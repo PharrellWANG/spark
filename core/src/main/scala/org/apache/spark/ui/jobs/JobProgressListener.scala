@@ -442,6 +442,7 @@ class JobProgressListener(conf: SparkConf) extends SparkListener with Logging {
   
   def removedItems(dataSize: Int, retainedSize: Int): Int = {
     val toRemove = dataSize - retainedSize + retainedSize * 0.1
+    logInfo(s"toRemove: ${toRemove}, retainedSize: ${retainedSize}")
     toRemove.toInt
   }
 
