@@ -155,7 +155,7 @@ final class ShuffleBlockFetcherIterator(
   }
 
   private[this] def sendRequest(req: FetchRequest) {
-    logDebug("Sending request for %d blocks (%s) from %s".format(
+    logDebug("%s sending request for %d blocks (%s) from %s".format(Thread.currentThread().getName,
       req.blocks.size, Utils.bytesToString(req.size), req.address.hostPort))
     bytesInFlight += req.size
     reqsInFlight += 1
