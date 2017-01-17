@@ -58,7 +58,10 @@ private[spark] trait ListenerBus[L <: AnyRef, E] extends Logging {
     // Java Iterator directly.
     val iter = listeners.iterator
     while (iter.hasNext) {
+      val begin = System.currentTimeMillis()
       val listener = iter.next()
+      logInfo(s"cost: ${System.currentTimeMillis() - begin}, listener: ${listener.toString}, " +
+        s"event: ${event.toString}")
       try {
         doPostEvent(listener, event)
       } catch {
