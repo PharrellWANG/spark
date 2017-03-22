@@ -32,15 +32,12 @@ class SparkFileOutputCommitter(outputPath: Path, context: TaskAttemptContext)
   extends FileOutputCommitter(outputPath, context) with Logging {
 
   override def commitJob(jobContext: JobContext): Unit = {
-
     if (hasOutputPath) {
       val finalOutput: Path = outputPath
       val fs: FileSystem = finalOutput.getFileSystem(context.getConfiguration)
-//      for (stat <- getAllCommittedTaskPaths(context)) {
-//        mergePaths(fs, stat, finalOutput)
-//      }
-      val taskPath = getCommittedTaskPath(context)
-      mergePaths(fs, taskPath, finalOutput)
+
+      val jobAttemptPath = getJobAttemptPath(context)
+      mergePaths(fs, jobAttemptPath, finalOutput)
       cleanupJob(context)
       if (context.getConfiguration.getBoolean(FileOutputCommitter.SUCCESSFUL_JOB_OUTPUT_DIR_MARKER,
         true)) {
