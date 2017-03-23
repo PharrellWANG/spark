@@ -64,7 +64,7 @@ class SparkFileOutputCommitter(outputPath: Path, context: TaskAttemptContext)
           throw new IOException(s"Failed to delete ${to}")
         }
       }
-      if (!fs.rename(fs.getFileStatus(from).getPath, to)) {
+      if (!fs.rename(from, to)) {
         throw new IOException("Failed to rename " + from + " to " + to)
       }
   }
