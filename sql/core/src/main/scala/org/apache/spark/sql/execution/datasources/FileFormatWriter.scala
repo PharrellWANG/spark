@@ -216,8 +216,8 @@ object FileFormatWriter extends Logging {
       // Set up the configuration object
       val hadoopConf = description.serializableHadoopConf.value
       hadoopConf.set("mapreduce.job.id", jobId.toString)
-      hadoopConf.set("mapreduce.task.id", taskAttemptId.getTaskID.toString)
-      hadoopConf.set("mapreduce.task.attempt.id", taskAttemptId.toString)
+      hadoopConf.set("mapreduce.task.id", "")
+      hadoopConf.set("mapreduce.task.attempt.id", "")
       hadoopConf.setBoolean("mapreduce.task.ismap", true)
       hadoopConf.setInt("mapreduce.task.partition", 0)
 
