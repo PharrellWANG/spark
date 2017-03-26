@@ -17,7 +17,7 @@
 
 package org.apache.spark.sql.hive.committer
 
-import java.io.IOException
+import java.io.{FileNotFoundException, IOException}
 
 import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
 import org.apache.hadoop.mapreduce.{JobContext, TaskAttemptContext}
@@ -53,6 +53,39 @@ class SparkFileOutputCommitter(outputPath: Path, context: TaskAttemptContext)
     if (hasOutputPath()) {
       context.progress()
     }
+
+    val attemptId = context.getTaskAttemptID()
+    if(this.hasOutputPath()) {
+      context.progress()
+
+      val fs = taskAttemptPath.getFileSystem(context.getConfiguration())
+
+      var taskAttemptDirStatus: FileStatus = null
+      try {
+        taskAttemptDirStatus = fs.getFileStatus(taskAttemptPath)
+      } catch {
+        case e: FileNotFoundException => logError("Exception in statusUpdate", e)
+        taskAttemptDirStatus = null
+      }
+
+      if (taskAttemptDirStatus != null) {
+          val committedTaskPath = this.getCommittedTaskPath(context)
+          if (fs.exists(committedTaskPath) && !fs.delete(committedTaskPath, true)) {
+            throw new IOException("Could not delete " + committedTaskPath)
+          }
+
+          if (!fs.rename(taskAttemptPath, committedTaskPath)) {
+            throw new IOException("Could not rename " + taskAttemptPath + " to " +
+              committedTaskPath)
+          }
+          logInfo("Saved output of task \'" + attemptId + "\' to " + committedTaskPath)
+      } else {
+        logWarning("No Output found for " + attemptId)
+      }
+    } else {
+      logWarning("Output Path is null in commitTask()")
+    }
+
   }
 
   def hasOutputPath(): Boolean = outputPath != null
