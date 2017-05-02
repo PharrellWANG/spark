@@ -50,8 +50,7 @@ private[thriftserver] class SparkSQLOperationManager()
     val sqlContext = sessionToContexts.get(parentSession.getSessionHandle)
     require(sqlContext != null, s"Session handle: ${parentSession.getSessionHandle} has not been" +
       s" initialized or had already closed.")
-    val sessionState =
-      sqlContext.sessionState.asInstanceOf[HiveSessionStateBuilder].session.sessionState
+    val sessionState = sqlContext.sessionState
     val hiveSessionState = parentSession.getSessionState
     setConfMap(sessionState, hiveSessionState.getOverriddenConfigurations)
     setConfMap(sessionState, hiveSessionState.getHiveVariables)
