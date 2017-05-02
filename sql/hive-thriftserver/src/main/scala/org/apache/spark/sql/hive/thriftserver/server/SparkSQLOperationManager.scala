@@ -26,8 +26,9 @@ import org.apache.hive.service.cli.session.HiveSession
 
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.hive.HiveUtils
+import org.apache.spark.sql.hive.{HiveSessionStateBuilder, HiveUtils}
 import org.apache.spark.sql.hive.thriftserver.{ReflectionUtils, SparkExecuteStatementOperation}
+import org.apache.spark.sql.internal.SessionState
 
 /**
  * Executes queries using Spark SQL, and maintains a list of handles to active queries.
@@ -49,6 +50,11 @@ private[thriftserver] class SparkSQLOperationManager()
     val sqlContext = sessionToContexts.get(parentSession.getSessionHandle)
     require(sqlContext != null, s"Session handle: ${parentSession.getSessionHandle} has not been" +
       s" initialized or had already closed.")
+//    val sessionState =
+//      sqlContext.sessionState.asInstanceOf[HiveSessionStateBuilder].session.sessionState
+//    val hiveSessionState = parentSession.getSessionState
+//    setConfMap(sessionState, hiveSessionState.getOverriddenConfigurations)
+//    setConfMap(sessionState, hiveSessionState.getHiveVariables)
     val conf = sqlContext.sessionState.conf
     val runInBackground = async && conf.getConf(HiveUtils.HIVE_THRIFT_SERVER_ASYNC)
     val operation = new SparkExecuteStatementOperation(parentSession, statement, confOverlay,
@@ -58,4 +64,14 @@ private[thriftserver] class SparkSQLOperationManager()
       s"runInBackground=$runInBackground")
     operation
   }
+
+  def setConfMap(sessionState: SessionState,
+                 confMap: java.util.Map[String, String]): Unit = {
+    val iterator = confMap.entrySet().iterator()
+      while (iterator.hasNext) {
+          val kv = iterator.next()
+          sessionState.conf.setConfString(kv.getKey, kv.getValue)
+        }
+    }
+
 }
