@@ -67,6 +67,8 @@ private[thriftserver] class SparkSQLOperationManager()
     val iterator = confMap.entrySet().iterator()
     while (iterator.hasNext) {
       val kv = iterator.next()
+      // scalastyle:off
+      println(s"key:${kv.getKey}, value${kv.getValue}")
       conf.setConfString(kv.getKey, kv.getValue)
     }
   }
