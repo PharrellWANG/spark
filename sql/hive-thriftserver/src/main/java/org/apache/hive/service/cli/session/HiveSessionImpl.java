@@ -209,6 +209,8 @@ public class HiveSessionImpl implements HiveSession {
       String key = entry.getKey();
       if (key.startsWith("set:")) {
         try {
+          System.out.println("#########################");
+          System.out.println("key.substring(4)" + "," + entry.getValue());
           SetProcessor.setVariable(key.substring(4), entry.getValue());
         } catch (Exception e) {
           throw new HiveSQLException(e);
