@@ -22,6 +22,7 @@ import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.sql.{Date, DriverManager, SQLException, Statement}
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -124,6 +125,48 @@ class HiveThriftBinaryServerSuite extends HiveThriftJdbcTest {
 
         // Fetch result second time from first row
         assertResult(5, "Repeat fetching result from first row") {
+
+          val rows_first = client.fetchResults(
+            operationHandle,
+            FetchOrientation.FETCH_FIRST,
+            1000,
+            FetchType.QUERY_OUTPUT)
+
+          rows_first.numRows()
+        }
+      }
+    }
+  }
+
+  test("Support beeline --hiveconf and --hivevar") {
+    withCLIServiceClient { client =>
+      val user = System.getProperty("user.name")
+      val opConf = Map("--hiveconf" -> "a=avalue", "--hivevar" -> "b=bvalue").asJava
+      val sessionHandle = client.openSession(user, "", opConf)
+
+      withJdbcStatement("test_16563") { statement =>
+        val queries = Seq("select ${a}", "select ${b}")
+        queries.foreach(statement.execute)
+        val confOverlay = new java.util.HashMap[java.lang.String, java.lang.String]
+        val operationHandle = client.executeStatement(
+          sessionHandle,
+          "SELECT * FROM test_16563",
+          confOverlay)
+
+        // Fetch result first time
+        assertResult("avalue", "Fetching result first time from next row") {
+
+          val rows_next = client.fetchResults(
+            operationHandle,
+            FetchOrientation.FETCH_NEXT,
+            1000,
+            FetchType.QUERY_OUTPUT)
+
+          rows_next.numRows()
+        }
+
+        // Fetch result second time from first row
+        assertResult("bvalue", "Repeat fetching result from first row") {
 
           val rows_first = client.fetchResults(
             operationHandle,
