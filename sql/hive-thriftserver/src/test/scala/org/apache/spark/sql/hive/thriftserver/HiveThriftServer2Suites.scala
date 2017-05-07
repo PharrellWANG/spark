@@ -141,40 +141,36 @@ class HiveThriftBinaryServerSuite extends HiveThriftJdbcTest {
   test("Support beeline --hiveconf and --hivevar") {
     withCLIServiceClient { client =>
       val user = System.getProperty("user.name")
-      val opConf = Map("--hiveconf" -> "a=avalue", "--hivevar" -> "b=bvalue").asJava
-      val sessionHandle = client.openSession(user, "", opConf)
+      val opConf = Map("--hiveconf" -> "a=avalue", "--hivevar" -> "b=bvalue")
+      val sessionHandle = client.openSession(user, "", opConf.asJava)
 
-      withJdbcStatement("test_16563") { statement =>
-        val queries = Seq("select ${a}", "select ${b}")
-        queries.foreach(statement.execute)
-        val confOverlay = new java.util.HashMap[java.lang.String, java.lang.String]
-        val operationHandle = client.executeStatement(
-          sessionHandle,
-          "SELECT * FROM test_16563",
-          confOverlay)
+      withJdbcStatement() { statement =>
+        val resultSet = statement.executeQuery("SET spark.sql.hive.version")
+        resultSet.next()
+        assert(resultSet.getString(1) === "spark.sql.hive.version")
+        assert(resultSet.getString(2) === HiveUtils.hiveExecutionVersion)
+      }
 
-        // Fetch result first time
-        assertResult("avalue", "Fetching result first time from next row") {
+      val queries = opConf.values.map(_.split("=")).map { s =>
+        (s"select ${s(0)}", s(1))
+      }
 
-          val rows_next = client.fetchResults(
-            operationHandle,
-            FetchOrientation.FETCH_NEXT,
-            1000,
-            FetchType.QUERY_OUTPUT)
+      queries.foreach { sql =>
+        withJdbcStatement() { statement =>
+          val confOverlay = new java.util.HashMap[java.lang.String, java.lang.String]
+          val operationHandle = client.executeStatement(
+            sessionHandle,
+            sql._1,
+            confOverlay)
 
-          rows_next.numRows()
-        }
-
-        // Fetch result second time from first row
-        assertResult("bvalue", "Repeat fetching result from first row") {
-
-          val rows_first = client.fetchResults(
-            operationHandle,
-            FetchOrientation.FETCH_FIRST,
-            1000,
-            FetchType.QUERY_OUTPUT)
-
-          rows_first.numRows()
+          assertResult(sql._2) {
+            val rows_next = client.fetchResults(
+              operationHandle,
+              FetchOrientation.FETCH_NEXT,
+              1,
+              FetchType.QUERY_OUTPUT)
+            rows_next.numRows()
+          }
         }
       }
     }
