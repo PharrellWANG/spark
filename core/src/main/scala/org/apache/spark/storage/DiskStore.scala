@@ -122,7 +122,7 @@ private[spark] class DiskStore(
         } else {
           Utils.tryWithSafeFinally {
             new ByteBufferBlockData(
-              new ChunkedByteBuffer(channel.map(MapMode.READ_ONLY, 0, file.length)), true)
+              new ChunkedByteBuffer(channel.map(MapMode.READ_ONLY, 0L, file.length)), true)
           } {
             channel.close()
           }
