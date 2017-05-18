@@ -132,6 +132,7 @@ private[spark] class EventLoggingListener(
 
   /** Log the event as JSON. */
   private def logEvent(event: SparkListenerEvent, flushLogger: Boolean = false) {
+    val start = System.currentTimeMillis()
     val eventJson = JsonProtocol.sparkEventToJson(event)
     // scalastyle:off println
     writer.foreach(_.println(compact(render(eventJson))))
@@ -140,6 +141,8 @@ private[spark] class EventLoggingListener(
       writer.foreach(_.flush())
       hadoopDataStream.foreach(_.hflush())
     }
+    val end = System.currentTimeMillis()
+    logWarning(s"logEvent consume time: ${end - start}")
     if (testing) {
       loggedEvents += eventJson
     }
