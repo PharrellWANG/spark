@@ -60,7 +60,10 @@ private[spark] trait ListenerBus[L <: AnyRef, E] extends Logging {
     while (iter.hasNext) {
       val listener = iter.next()
       try {
+        val start = System.currentTimeMillis()
         doPostEvent(listener, event)
+        val end = System.currentTimeMillis()
+        logWarning(s"postToAll consume time: ${end - start}")
       } catch {
         case NonFatal(e) =>
           logError(s"Listener ${Utils.getFormattedClassName(listener)} threw an exception", e)
