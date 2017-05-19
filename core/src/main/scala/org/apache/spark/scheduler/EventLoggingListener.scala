@@ -144,8 +144,8 @@ private[spark] class EventLoggingListener(
       hadoopDataStream.foreach(_.hflush())
     }
     val time4 = System.currentTimeMillis()
-    logWarning(s"logEvent consume time: ${time4 - time1}, ${time2 - time1},
-      ${time3 - time2}, ${time4 - time3}")
+    logWarning(s"logEvent consume " +
+      s"time: ${time4 - time1}, ${time2 - time1}, ${time3 - time2}, ${time4 - time3}")
     if (testing) {
       loggedEvents += eventJson
     }
