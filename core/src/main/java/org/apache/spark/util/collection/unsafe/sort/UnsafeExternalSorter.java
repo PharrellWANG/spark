@@ -61,9 +61,10 @@ public final class UnsafeExternalSorter extends MemoryConsumer {
 
   /**
    * Force this sorter to spill when there are this many elements in memory. The default value is
-   * 1024 * 1024 * 1024 / 2 which allows the maximum size of the pointer array to be 8G.
+   * 1024 * 1024 * 1024 / 4 which allows the maximum size of the pointer array(including the
+   * temporary sorting buffer) to be 8G.
    */
-  public static final long DEFAULT_NUM_ELEMENTS_FOR_SPILL_THRESHOLD = 1024 * 1024 * 1024 / 2;
+  public static final long DEFAULT_NUM_ELEMENTS_FOR_SPILL_THRESHOLD = 1024 * 1024 * 1024 / 4;
 
   private final long numElementsForSpillThreshold;
   /**
@@ -335,6 +336,13 @@ public final class UnsafeExternalSorter extends MemoryConsumer {
     assert(inMemSorter != null);
     if (!inMemSorter.hasSpaceForAnotherRecord()) {
       long used = inMemSorter.getMemoryUsage();
+      // If the pointer array in the sorter is already large(over half of the max page size), do
+      // not expand it, but do spill instead.
+      if (used > TaskMemoryManager.MAXIMUM_PAGE_SIZE_BYTES / 2) {
+        spill();
+        return;
+      }
+
       LongArray array;
       try {
         // could trigger spilling
